@@ -24,18 +24,6 @@ horror_movies <- readr::read_csv("https://raw.githubusercontent.com/rfordatascie
 #check out data
 horror_movies %>% head()
 
-#count movies 
-count <- horror_movies %>% 
-#convert to date column
-mutate(release_date= dmy(release_date)) %>% 
-#filter for full year of 2016
-filter(release_date >= ("2016-01-01") & release_date <= ("2016-12-31")) %>% 
-#count and group by release_date
-group_by(release_date) %>% ungroup() %>% 
-count(release_date) %>% summarize(n = n())
-
-count
-
 ```
 
 ```{r}
@@ -43,18 +31,20 @@ count
 df <- horror_movies %>% 
 #convert to date column
 mutate(release_date= dmy(release_date)) %>% 
-#filter for 2016
+#filter for 2017
 filter(release_date >= ("2017-01-01") & release_date <= ("2017-12-31")) %>% 
 #count and group by release_date
 group_by(release_date) %>% 
 ungroup() %>% 
 count(release_date) %>% 
 arrange(release_date) %>%  
+
 #parse week / weekday / year  
   mutate(
   week = as.POSIXlt(release_date)$yday %/% 7 + 1,
-  wday = as.POSIXlt(release_date)$wday,
-  year = as.POSIXlt(release_date)$year + 1900)
+  wday = as.POSIXlt(release_date)$wday, 
+  month = as.POSIXlt(release_date)$mon, 
+  year = as.POSIXlt(release_date)$year + 1900) 
 
 # blank slate plot 
 theme_change <- theme(
@@ -76,17 +66,17 @@ theme_change <- theme(
  text=element_text(family="ApexNew-Book")
  )
 
-
 hm <- df %>% 
   ggplot(aes(week, wday, fill=n)) +
-  geom_tile(colour = "white", size = 0.7) +
+  geom_tile(colour = "white", size = 0.8) +
   coord_equal() +
 scale_fill_gradientn(colours = c("#FDF156","#FFC722","#FF9711","#04001B")) + theme_change +
-  labs(title="244 horror movies released in the last year", fill="less") 
+  labs(title="780 horror movies released in the last year", fill="less", caption = "source: IMdB | viz: @alysonla | #tidytuesday") 
+# + scale_x_date(date_breaks = "Month", date_labels = "%M", position = "top")
 
 hm
 
-ggsave("horror_movies.png", plot = hm, width = 10, height = 8, dpi = 300)
+ggsave("horror_movies.png", plot = hm, width = 8, height = 3, dpi = 300)
 
 ```
 
