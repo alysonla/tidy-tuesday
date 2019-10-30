@@ -28,9 +28,19 @@ horror_movies %>% head()
 
 ```{r}
 
+get_month <- function(x) {
+ dates <- seq.Date(ymd("2017-01-01"), ymd("2017-12-31"), by = "1 week")
+ week_num <- week(dates)
+ month_abbr <- format(dates, "%b")
+ week_months <- week_num
+ names(week_months) <- month_abbr
+ names(week_months[x])
+}
+
 df <- horror_movies %>% 
-#convert to date column
+#convert to date column 
 mutate(release_date= dmy(release_date)) %>% 
+filter(!is.na(release_date)) %>%   
 #filter for 2017
 filter(release_date >= ("2017-01-01") & release_date <= ("2017-12-31")) %>% 
 #count and group by release_date
@@ -46,6 +56,8 @@ arrange(release_date) %>%
   month = as.POSIXlt(release_date)$mon, 
   year = as.POSIXlt(release_date)$year + 1900) 
 
+weekdayf<-factor(df$wday,levels=rev(1:7),labels=rev(c("Mon","Tue","Wed","Thu","Fri","Sat","Sun")),ordered=TRUE) #converting the day no. to factor 
+
 # blank slate plot 
 theme_change <- theme(
  plot.background = element_blank(),
@@ -55,28 +67,27 @@ theme_change <- theme(
  panel.border = element_blank(),
  axis.line = element_blank(),
  axis.ticks = element_blank(),
- axis.text.x = element_blank(),
- axis.text.y = element_blank(),
  axis.title.x = element_blank(),
  axis.title.y = element_blank(),
  legend.position="bottom",
  legend.text = element_blank(),
- legend.key.size = unit(.4, "cm"),
- legend.key.width = unit(1, "cm"),
+ legend.key.size = unit(.5, "cm"),
+ legend.key.width = unit(.5, "cm"),
  text=element_text(family="ApexNew-Book")
  )
 
 hm <- df %>% 
-  ggplot(aes(week, wday, fill=n)) +
+  ggplot(aes(week, weekdayf, fill=n)) +
   geom_tile(colour = "white", size = 0.8) +
   coord_equal() +
 scale_fill_gradientn(colours = c("#FDF156","#FFC722","#FF9711","#04001B")) + theme_change +
-  labs(title="780 horror movies released in the last year", fill="less", caption = "source: IMdB | viz: @alysonla | #tidytuesday") 
-# + scale_x_date(date_breaks = "Month", date_labels = "%M", position = "top")
-
+  labs(title="661 horror movies released in the last year", fill="less", caption = "source: IMdB | viz: @alysonla | #tidytuesday") + 
+  scale_x_continuous(breaks = c(1,6,10,14,19,23,27,32,36,40,45,49), labels = get_month, position = "top") + 
+  scale_y_discrete(breaks =c("Mon","Wed","Fri")) 
+  
 hm
 
-ggsave("horror_movies.png", plot = hm, width = 8, height = 3, dpi = 300)
+ggsave("horror_movies.png", plot = hm, width = 9, height = 3, dpi = 300)
 
 ```
 
